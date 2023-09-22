@@ -1,4 +1,4 @@
-const iconv = require('iconv-lite');
+const iconv = require('iconv-browser');
 
 /**
  * This DataStream is for internal use.

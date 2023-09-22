@@ -1350,7 +1350,7 @@ function fileTimeToUnixEpoch(time: number) {
 /**
  * The core implementation of MsgReader
  */
-export default class MsgReader {
+export class MsgReader {
   private reader: Reader;
   private fieldsData: FieldsData;
   parserConfig?: ParserConfig;
