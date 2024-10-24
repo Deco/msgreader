@@ -1,6 +1,6 @@
 {
   "name": "msgreader",
-  "version": "1.20.0",
+  "version": "1.22.0-deco",
   "description": "Outlook Item File (.msg) reader in JavaScript Npm Module",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -14,6 +14,15 @@
   "author": "kenjiuno",
   "repository": "github:Deco/msgreader",
   "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^17.0.23",
+    "commander": "^9.1.0",
+    "mocha": "^9.2.2",
+    "temp": "^0.9.4",
+    "typedoc": "^0.22.13",
+    "typedoc-plugin-rename-defaults": "^0.4.0",
+    "typescript": "^4.6.3"
+  },
   "dependencies": {
     "@kenjiuno/decompressrtf": "^0.1.3",
     "iconv-browser": "https://github.com/machsix/iconv-browser",

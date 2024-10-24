@@ -20,7 +20,7 @@ import CONST from './const'
 import DataStream from './DataStream'
 import { CFileSet, CFolder, Reader } from './Reader';
 import { burn, Entry } from './Burner';
-import { emptyToNull, msftUuidStringify, toHex2, toHex4 } from './utils';
+import { bin2HexUpper, emptyToNull, msftUuidStringify, toHex2, toHex4 } from './utils';
 import { parse as entryStreamParser } from './EntryStreamParser';
 import { parse as parseVerbStream } from './VerbStreamParser';
 import { parse as parseTZDEFINITION, TzDefinition } from './TZDEFINITIONParser';
@@ -1066,6 +1066,54 @@ export interface SomeOxProps {
    */
   timeZoneDesc?: string;
 
+  /**
+   * Contains formatting information about a Multipurpose Internet Mail Extensions (MIME) attachment.
+   * 
+   * e.g. `image/png`
+   * 
+   * Target {@link dataType} = 'attachment'.
+   * 
+   * @see [PidTagAttachMimeTag Canonical Property | Microsoft Learn](https://learn.microsoft.com/en-us/office/client-developer/outlook/mapi/pidtagattachmimetag-canonical-property)
+   */
+  attachMimeTag?: string;
+
+  /**
+   * Corresponds to the message ID field as specified in [RFC2822].
+   * 
+   * e.g.
+   * 
+   * - `<!&!AAAAAAAAAAAYAAAAAAAAAMhvd5eG4u1FrRI13ZUKpD3CgAAAEAAAACfDkx1LwvlJrcgpqnDqBPIBAAAAAA==@xmailserver.test>`
+   * - `<000001da0c5d$22ab1460$68013d20$@hmailserver.test>`
+   * - `<OS3P286MB0565639EF64566509A9EE31281CC9@OS3P286MB0565.JPNP286.PROD.OUTLOOK.COM>`
+   * 
+   * Target {@link dataType} = 'msg'.
+   * 
+   * @see [PidTagInternetMessageId Canonical Property | Microsoft Learn](https://learn.microsoft.com/en-us/office/client-developer/outlook/mapi/pidtaginternetmessageid-canonical-property)
+   */
+  messageId?: string;
+
+  /**
+   * Represents the location of an appointment.
+   * 
+   * e.g.
+   * 
+   * - ``
+   * - `Awesome coffee shop`
+   * 
+   * Target {@link dataType} = 'msg'.
+   * 
+   * @see [PidLidLocation Canonical Property | Microsoft Learn](https://learn.microsoft.com/en-us/office/client-developer/outlook/mapi/pidlidlocation-canonical-property)
+   */
+  apptLocation?: string;
+
+  /**
+   * Indicates the original value of the dispidLocation (PidLidLocation) property before a meeting update.
+   * 
+   * Target {@link dataType} = 'msg'.
+   * 
+   * @see [PidLidOldLocation Canonical Property | Microsoft Learn](https://learn.microsoft.com/en-us/office/client-developer/outlook/mapi/pidlidoldlocation-canonical-property)
+   */
+  apptOldLocation?: string;
 }
 
 export interface SomeParsedOxProps {
@@ -1133,6 +1181,18 @@ export interface SomeParsedOxProps {
    * @see [PidLidAppointmentRecur Canonical Property | Microsoft Learn](https://learn.microsoft.com/en-us/office/client-developer/outlook/mapi/pidlidappointmentrecur-canonical-property)
    */
   apptRecur?: AppointmentRecur;
+
+  /**
+   * Specifies the unique identifier of the calendar object.
+   * 
+   * e.g. `040000008200E00074C5B7101A82E00800000000A048DAF17405D9010000000000000000100000003C10A5564C9D36459E7780C78BAFCB77`
+   * 
+   * Target {@link dataType} = 'msg'.
+   * 
+   * @see [PidLidGlobalObjectId Canonical Property | Microsoft Learn](https://learn.microsoft.com/en-us/office/client-developer/outlook/mapi/pidlidglobalobjectid-canonical-property)
+   * @see [AppointmentItem.GlobalAppointmentID property (Outlook) | Microsoft Learn](https://learn.microsoft.com/en-us/office/vba/api/outlook.appointmentitem.globalappointmentid)
+   */
+  globalAppointmentID?: string;
 
   // Only parsed props!
 }
@@ -1338,6 +1398,11 @@ interface FieldValuePair {
   keyType: KeyType;
   value: string | Uint8Array;
 
+  /**
+   * About rawProp, skip this one in case of getting unread value from Property Stream.
+   */
+  notForRawProp: boolean;
+
   propertyTag?: string;
   propertySet?: string;
   propertyLid?: string
@@ -1481,10 +1546,13 @@ export class MsgReader {
         value = "bcc";
       }
     }
+    else if (key === "globalAppointmentID") {
+      value = bin2HexUpper(ds);
+    }
 
     const propertyTag = `${fieldClass}${fieldType}`;
 
-    return { key, keyType, value, propertyTag, propertySet, propertyLid, };
+    return { key, keyType, value, notForRawProp: skip, propertyTag, propertySet, propertyLid, };
   }
 
   private fieldsDataDocument(parserConfig: ParsingConfig, documentProperty: CFileSet, fields: FieldsData): void {
@@ -1522,16 +1590,18 @@ export class MsgReader {
     }
     if (parserConfig.includeRawProps === true) {
       fields.rawProps = fields.rawProps || [];
-      fields.rawProps.push(
-        {
-          propertyTag: pair.propertyTag,
-          propertySet: pair.propertySet,
-          propertyLid: pair.propertyLid,
-          propertyName: (pair.keyType === KeyType.named) ? pair.key : undefined,
+      if (!pair.notForRawProp) {
+        fields.rawProps.push(
+          {
+            propertyTag: pair.propertyTag,
+            propertySet: pair.propertySet,
+            propertyLid: pair.propertyLid,
+            propertyName: (pair.keyType === KeyType.named) ? pair.key : undefined,
 
-          value: value,
-        }
-      );
+            value: value,
+          }
+        );
+      }
     }
   }
 
