@@ -1392,7 +1392,6 @@ __metadata:
     mocha: "npm:^9.2.2"
     temp: "npm:^0.9.4"
     typedoc: "npm:^0.26.10"
-    typedoc-plugin-rename-defaults: "npm:^0.4.0"
     typescript: "npm:^5.6.3"
   languageName: unknown
   linkType: soft
@@ -1893,15 +1892,6 @@ __metadata:
   version: 3.0.1
   resolution: "trim-lines@npm:3.0.1"
   checksum: 10/7a1325e4ce8ff7e9e52007600e9c9862a166d0db1f1cf0c9357e359e410acab1278fcd91cc279dfa5123fc37b69f080de02f471e91dbbc61b155b9ca92597929
-  languageName: node
-  linkType: hard
-
-"typedoc-plugin-rename-defaults@npm:^0.4.0":
-  version: 0.4.0
-  resolution: "typedoc-plugin-rename-defaults@npm:0.4.0"
-  peerDependencies:
-    typedoc: 0.22.x
-  checksum: 10/b7ae30dca66c80a76c77fffeec8f429cbde413b781baa0d22021166d729cceab9269d997e010404a31dd6065cad59f40aee957b4bed8129b7141c53123b7d97f
   languageName: node
   linkType: hard
 
